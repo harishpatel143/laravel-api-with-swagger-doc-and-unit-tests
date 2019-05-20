@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\User;
+use Faker\Factory;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -16,13 +17,14 @@ class LoginTest extends TestCase
         $response = $this->json('POST', 'api/login');
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-//            ->assertJsonStructure(
-//                [
-//                    "success" => false,
-//                    "message" => [],
-//                    "payload" => [],
-//                ]
-//            )
+            ->assertJsonStructure(
+                [
+                    "success",
+                    "message",
+                    "payload" => [
+                    ],
+                ]
+            )
             ->assertJson([
                 'success' => false,
             ]);
@@ -31,22 +33,19 @@ class LoginTest extends TestCase
 
     public function testUserLoginsSuccessfully()
     {
-        $user = factory(User::class)->create([
-            'email' => 'testlogin@user1.com2',
-            'password' => bcrypt('toptal123'),
-        ]);
+        $faker = Factory::create();
+        $data = ['email' => $faker->email, 'password' => bcrypt('thinker')];
+        factory(User::class)->create($data);
 
-        $payload = ['email' => 'testlogin@user.com', 'password' => 'toptal123'];
-
-        $this->json('POST', 'api/login', $payload)
-            ->assertStatus(Response::HTTP_OK);
-//            ->assertJsonStructure(
-//                [
-//                    "success" => true,
-//                    "message" => [],
-//                    "payload" => [],
-//                ]
-//            );
+        $this->json('POST', 'api/login', ['email' => $data['email'], 'password' => 'thinker'])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure(
+                [
+                    "success",
+                    "message",
+                    "payload" => [],
+                ]
+            );
 
     }
 }

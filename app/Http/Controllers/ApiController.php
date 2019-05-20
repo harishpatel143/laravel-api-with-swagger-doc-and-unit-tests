@@ -161,12 +161,13 @@ class ApiController extends Controller
     {
         $input = $request->only('email', 'password');
         $jwt_token = null;
-
+        $data = [];
         if (!$jwt_token = JWTAuth::attempt($input)) {
             return $this->apiResponse->respondValidationError('Invalid Email or Password');
         }
+        $data['access_token'] = $jwt_token;
 
-        return $this->apiResponse->respondWithMessageAndPayload($jwt_token, 'Logged in successfully.');
+        return $this->apiResponse->respondWithMessageAndPayload($data, 'Logged in successfully.');
     }
 
     /**

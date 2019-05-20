@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Response\ApiResponse;
 use Illuminate\Http\Request;
 use App\Product;
 use JWTAuth;
@@ -9,18 +10,20 @@ use JWTAuth;
 class ProductController extends Controller
 {
     protected $user;
+    protected $apiResponse;
 
-    public function __construct()
+    public function __construct(ApiResponse $apiResponse)
     {
         $this->user = JWTAuth::parseToken()->authenticate();
+        $this->apiResponse = $apiResponse;
     }
 
     public function index()
     {
-        return $this->user
-            ->products()
-            ->get(['name', 'price', 'quantity'])
-            ->toArray();
+        $products = $this->user->products()->get(['name', 'price', 'quantity'])->toArray();
+
+        return $this->apiResponse->respondWithMessageAndPayload($products, 'Products retrieved successfully.');
+
     }
 
     public function show($id)
@@ -28,13 +31,10 @@ class ProductController extends Controller
         $product = $this->user->products()->find($id);
 
         if (!$product) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, product with id ' . $id . ' cannot be found'
-            ], 400);
+            return $this->apiResponse->respondNotFound('Sorry,This product not found in our system.');
         }
 
-        return $product;
+        return $this->apiResponse->respondWithMessageAndPayload($product, 'Product details retrieved successfully.');
     }
 
     public function store(Request $request)
